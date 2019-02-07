@@ -6,6 +6,32 @@ rm(list=ls())
 library(plyr)
 library(ggplot2)
 
+# plot MMRR data - daily mortality -------------------------------------------------------------------
+mmrr <- read.csv("Data/mmrr_with_bioclim2_climate.csv", head=T, stringsAsFactors = F)
+
+# round temperature to nearest degree and remove NA valeus 
+mmrr$Bioclim_Mean_temp <- round(mmrr$Bioclim_Mean_temp)
+mmrr <- subset(mmrr, !is.na(Bioclim_Mean_temp))
+
+# remove surveys where mosquitoes were captures as adults (unknown age)
+# 1. field-collected immatures; 2. field-collected adults; 3. Mixed; 4. lab-sourced adults  
+mmrr <- subset(mmrr, mos_origin == 1 | mos_origin == 4)
+
+# plot by genus
+genera <- c("Aedes", "Anopheles", "Culex")
+
+for (i in 1:length(genera)){
+  df <- subset(mmrr, genus == genera[i])
+  sppPlot <- ggplot(df, aes(x=factor(Bioclim_Mean_temp), y=DailyMortality, fill=species)) + 
+    xlab("Mean temperature") +
+    ylab("Daily survival rate") + 
+    theme_classic() + 
+    geom_point(aes(fill = species), size = 5, shape = 21, position = position_jitterdodge())
+  fileName <- paste0("Figures/Daily_mortality_by_temperature_", genera[i], "_lab-sourced.tiff")
+  ggsave(sppPlot, file=fileName)
+}
+
+# plot lab data - lifespan --------------------------------------------------------------------------
 # read in data
 mosqFiles <- list.files("Data/", pattern="*.csv")
 survival.df <- lapply(paste0("Data/", mosqFiles), read.csv)
@@ -36,18 +62,3 @@ ggplot(lifespan, aes(x=factor(Temp), y=Age, fill=factor(Species))) +
   theme_bw() + 
   geom_point(aes(fill = factor(Species)), size = 1, shape = 21, position = position_jitterdodge()) +
   scale_fill_manual(values=c("#999999", "#E69F00", "#56B4E9"))
-
-# plot MMRR data --------------------------------------------------------------------------------
-mmrr <- read.csv("Data/MMRRdata_main.csv", head=T)
-mmrr2 <- subset(mmrr, !is.na(DPS1_f))
-
-ggplot(mmrr2, aes(x=factor(species1), y=DPS1_f, fill=factor(genus))) + 
-  geom_boxplot() + 
-  facet_grid(. ~ genus, scales = "free") + 
-  xlab("Species") +
-  ylab("Daily survival rate") + 
-  guides(fill=FALSE) +
-  theme_bw() + 
-  geom_point(aes(fill = factor(genus)), size = 1, shape = 21, position = position_jitterdodge()) +
-  scale_fill_manual(values=c("#999999", "#E69F00", "#56B4E9"))
-
