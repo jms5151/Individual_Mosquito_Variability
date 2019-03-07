@@ -24,11 +24,12 @@ for (i in 1:length(genera)){
   df <- subset(mmrr, genus == genera[i])
   sppPlot <- ggplot(df, aes(x=factor(Bioclim_Mean_temp), y=DailyMortality, fill=species)) + 
     xlab("Mean temperature") +
-    ylab("Daily survival rate") + 
+    ylab("Daily mortality rate") + 
     theme_classic() + 
     geom_point(aes(fill = species), size = 5, shape = 21, position = position_jitterdodge())
   fileName <- paste0("Figures/Daily_mortality_by_temperature_", genera[i], "_lab-sourced.tiff")
-  ggsave(sppPlot, file=fileName)
+  # fileName <- paste0("Figures/Daily_mortality_by_temperature_", genera[i], "_all.tiff")
+  ggsave(sppPlot, file=fileName, width = 7, height = 4)
 }
 
 # plot lab data - lifespan --------------------------------------------------------------------------
